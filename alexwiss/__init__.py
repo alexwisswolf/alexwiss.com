@@ -33,11 +33,6 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
 	if not app.testing:
 		logging.basicConfig(level=logging.INFO)
 
-	# Setup the data model.
-	# with app.app_context():
-		# model = get_model()
-		# model.init_app(app)
-
 	# # Register the blueprint
 	# bp = Blueprint("main", __name__)
 	# app.register_blueprint(bp, url_prefix="/")
@@ -81,18 +76,3 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
 	
 	return app
 
-
-def get_model():
-	model_backend = current_app.config['DATA_BACKEND']
-	if model_backend == 'cloudsql':
-		from . import model_cloudsql
-		model = model_cloudsql
-	elif model_backend == 'datastore':
-		from . import model_datastore
-		model = model_datastore
-	else:
-		raise ValueError(
-			"No appropriate databackend configured. "
-			"Please specify datastore, or cloudsql")
-
-	return model
