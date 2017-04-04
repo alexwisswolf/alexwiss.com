@@ -73,7 +73,12 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
 		An internal error occurred: <pre>{}</pre>
 		See logs for full stacktrace.
 		""".format(e), 500
-
+	
+	@app.errorhandler(404)
+	def not_found(e):
+		return render_template("notfound.html")
+		
+	
 	return app
 
 
