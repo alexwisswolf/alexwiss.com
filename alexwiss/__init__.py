@@ -26,7 +26,7 @@ import json
 import os
 import gcp
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, strftime
 
 client_id = "b2542a830907411195ef052c11eb39fb"
 client_secret = "85182bd06df14b259fb41749128d2c3b"
@@ -114,13 +114,20 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
 		request = service.instances().list(project=project, zone=zone)
 		response = request.execute()
 		
+		exp_dict = {}
 		expiration = Instance.query(Instance.user == user).fetch()
+		for e in expiration:
+			exp_dict[e.name] = {"key": e.key, "expiration": e.expire_dttm}
 		
 		try:
 			instances = response['items']
 		except KeyError:
 			instances = []
-		return render_template("gcp.html", instances=instances, test=expiration)
+		
+		for instance in instances:
+			instance['expire_dttm'] = exp_dict[instance['name']]['expiration'].strftime("%Y-%m-%d %H:%M:%S")
+		
+		return render_template("gcp.html", instances=instances, test=instances)
 		
 	@app.route("/gcprequest")
 	def gcprequest():

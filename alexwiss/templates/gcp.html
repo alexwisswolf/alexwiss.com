@@ -31,6 +31,7 @@
 		<th>Instance</th>
 		<th>Type</th>
 		<th>Status</th>
+		<th>Expiration Time<th>
 	</tr>
 	{% for instance in instances %}
 	<tr>
@@ -42,6 +43,9 @@
 		</td>
 		<td>
 		{{ instance.status }}
+		</td>
+		<td>
+		{{ instance.expire_dttm }}
 		</td>
 		<td>
 			<form action="./gcpdeleteinstance" method="post">
