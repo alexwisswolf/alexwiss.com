@@ -23,3 +23,7 @@ threadsafe: true
 handlers:
 - url: /.*
   script: main.app
+  
+libraries:
+- name: ssl
+  version: 2.7
