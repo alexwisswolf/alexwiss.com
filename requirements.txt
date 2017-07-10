@@ -4,4 +4,5 @@ requests==2.11.1
 six==1.10.0
 google-api-python-client
 ez_setup
+setuptools
 google-appengine
