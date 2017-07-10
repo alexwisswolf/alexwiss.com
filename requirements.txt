@@ -3,5 +3,5 @@ gunicorn==19.6.0
 requests==2.11.1
 six==1.10.0
 google-api-python-client
-google-appengine
 ez_setup
+google-appengine
