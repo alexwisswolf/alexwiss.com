@@ -2,6 +2,6 @@ Flask==0.11.1
 gunicorn==19.6.0
 requests==2.11.1
 six==1.10.0
-yaml
+pyyaml
 google-api-python-client
 appengine-sdk
