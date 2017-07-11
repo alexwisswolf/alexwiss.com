@@ -24,9 +24,7 @@ import urllib
 import base64
 import json
 import os
-import gcp
 import uuid
-from datetime import datetime, timedelta, strftime
 
 client_id = "b2542a830907411195ef052c11eb39fb"
 client_secret = "85182bd06df14b259fb41749128d2c3b"
@@ -108,118 +106,6 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
 	@app.route("/projects")
 	def projects():
 		return render_template("projects.html")
-	
-	@app.route("/gcp")
-	def gcp():
-		request = service.instances().list(project=project, zone=zone)
-		response = request.execute()
-		
-		exp_dict = {}
-		expiration = Instance.query(Instance.user == user).fetch()
-		for e in expiration:
-			exp_dict[e.name] = {"key": e.key, "expiration": e.expire_dttm}
-		
-		try:
-			instances = response['items']
-		except KeyError:
-			instances = []
-		
-		for instance in instances:
-			instance['expire_dttm'] = exp_dict[instance['name']]['expiration'].strftime("%Y-%m-%d %H:%M:%S")
-		
-		return render_template("gcp.html", instances=instances, test=instances)
-		
-	@app.route("/gcprequest")
-	def gcprequest():
-		return render_template("gcprequest.html", available_instances=available_instances)
-	# TODO: Change code below to process the `response` dict:
-	#pprint(response)
-	
-	@app.route("/gcpnewinstance", methods = ['POST'])
-	def gcpnewinstance():
-		# Get POST data
-		image = request.form.get("image")
-		
-		# Create new image using API call
-		name = str(uuid.uuid4())
-		instance_body = {
-		  "name": name,
-		  "zone": "projects/%s/zones/%s" % (project, zone),
-		  "machineType": "projects/%s/zones/%s/machineTypes/%s" % (project, zone, image),
-		  "metadata": {
-			"items": []
-		  },
-		  "tags": {
-			"items": []
-		  },
-		  "disks": [
-			{
-			  "type": "PERSISTENT",
-			  "boot": True,
-			  "mode": "READ_WRITE",
-			  "autoDelete": True,
-			  "deviceName": name,
-			  "initializeParams": {
-				"sourceImage": "projects/ubuntu-os-cloud/global/images/ubuntu-1604-xenial-v20170502",
-				"diskType": "projects/%s/zones/%s/diskTypes/pd-standard" % (project, zone),
-				"diskSizeGb": "10"
-			  }
-			}
-		  ],
-		  "canIpForward": False,
-		  "networkInterfaces": [
-			{
-			  "network": "projects/%s/global/networks/default" % project,
-			  "subnetwork": "projects/%s/regions/us-central1/subnetworks/default" % project,
-			  "accessConfigs": [
-				{
-				  "name": "External NAT",
-				  "type": "ONE_TO_ONE_NAT"
-				}
-			  ]
-			}
-		  ],
-		  "description": "",
-		  "scheduling": {
-			"preemptible": False,
-			"onHostMaintenance": "MIGRATE",
-			"automaticRestart": True
-		  },
-		  "serviceAccounts": [
-			{
-			  "email": "962443382205-compute@developer.gserviceaccount.com",
-			  "scopes": [
-				"https://www.googleapis.com/auth/devstorage.read_only",
-				"https://www.googleapis.com/auth/logging.write",
-				"https://www.googleapis.com/auth/monitoring.write",
-				"https://www.googleapis.com/auth/servicecontrol",
-				"https://www.googleapis.com/auth/service.management.readonly",
-				"https://www.googleapis.com/auth/trace.append"
-			  ]
-			}
-		  ]
-		}
-		
-		instance_request = service.instances().insert(project=project, zone=zone, body=instance_body)
-		response = instance_request.execute()
-		
-		# Add record in DataStore with an expiration timeout
-		instance_ds = Instance()
-		instance_ds.name = name
-		instance_ds.expire_dttm = datetime.now() + timedelta(minutes=20)
-		instance_ds.user = user
-		instance_ds.put()
-		
-		# Redirect to instances page
-		return redirect(url_for("gcp"))
-		#return str(instance_body)
-	
-	@app.route("/gcpdeleteinstance", methods = ['POST'])
-	def gcpdeleteinstance():
-		instance = request.form.get("instance")
-		delete_request = service.instances().delete(project=project, zone=zone, instance=instance)
-		response = delete_request.execute()
-		return redirect(url_for("gcp"))
 	
 	@app.route("/spotify")
 	def spotify():
